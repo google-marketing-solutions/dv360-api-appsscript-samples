@@ -60,8 +60,7 @@ var Util = {
    * Modifies a url by either appending the @param {key} and
    * @param {value} to the end of the url if the @param {key}
    * was not present or replacing the value of the @param {key}
-   * if it existed. The method assumes the value to change is the
-   * *last* value in the url query string.
+   * if it existed.
    *
    * @param {url}: the url to modify.
    * @param {key}: the key to check if present.
@@ -72,7 +71,7 @@ var Util = {
   modifyUrlQueryString: function(url, key, value) {
 
     if (url.includes(`${key}=`)) {
-      var regExp = new RegExp(`${key}=.*`, 'g');
+      var regExp = new RegExp(`${key}=[^&]*`, 'g');
       url = url.replace(regExp, `${key}=` + value);
     } else {
       url += `&${key}=${value}`;
