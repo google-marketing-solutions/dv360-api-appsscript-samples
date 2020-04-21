@@ -1,11 +1,13 @@
 /**
+ * @license
+ *
  * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +17,8 @@
  */
 
 /**
- * This Google Apps Script file represents the different DV360 API
- * resources and the operations that can be triggered on them.
+ * @fileoverview This Google Apps Script file represents the different DV360
+ * API resources and the operations that can be triggered on them.
  * The API resources are organized in separate namespaces for better
  * portability.
  * The general approach here is that each method delegates to
@@ -39,13 +41,11 @@ var ApiResource = {
     /**
      * Lists available advertisers for the given partner ID.
      *
-     * @param {partnerId}: the partner ID to use.
+     * @param {string} partnerId: the partner ID to use.
      */
     listAdvertisers: function(partnerId) {
       var uri = `advertisers?partnerId=${partnerId}`;
-      var params = {
-        'method': 'get'
-      }
+      var params = {'method': 'get'};
       var callback = ApiResource.Advertiser.handleListAdvertisers;
 
       ApiUtil.prepareAndExecuteApiGetRequest(uri, params, callback);
@@ -55,148 +55,134 @@ var ApiResource = {
      * Response handler for the @link {ApiResource.Advertiser.listAdvertisers}
      * method.
      *
-     * @param {result}: the API response JSON object.
-     * @param {overwrite}: whether to overwrite the existing sheet data
-     *          or to append to it.
+     * @param {Object!} result: the API response JSON object.
+     * @param {boolean} overwrite: whether to overwrite the existing sheet data
+     *           or to append to it.
      */
     handleListAdvertisers: function(result, overwrite) {
       var advertisers = [];
 
       result['advertisers'].forEach(function(advertiser) {
-        advertisers.push(ApiResource.Advertiser.buildAdvertiserOutput(advertiser));
+        advertisers.push(
+            ApiResource.Advertiser.buildAdvertiserOutput(advertiser));
       });
 
       var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
 
       if (overwrite) {
         SheetUtil.clearRange(
-          sheetConfig['name'],
-          sheetConfig['rangeStartRow'],
-          sheetConfig['rangeStartCol']);
+            sheetConfig['name'], sheetConfig['rangeStartRow'],
+            sheetConfig['rangeStartCol']);
         SheetUtil.outputInRange(
-          sheetConfig['name'],
-          sheetConfig['rangeStartRow'],
-          sheetConfig['rangeStartCol'],
-          advertisers);
+            sheetConfig['name'], sheetConfig['rangeStartRow'],
+            sheetConfig['rangeStartCol'], advertisers);
       } else {
         SheetUtil.appendOutputToRange(
-          sheetConfig['name'],
-          sheetConfig['rangeStartCol'],
-          advertisers);
+            sheetConfig['name'], sheetConfig['rangeStartCol'], advertisers);
       }
-
     },
 
     /**
      * Creates a new advertiser resource.
      *
-     * @param {advertiserRow}: row index of the advertiser data to create.
-     * @param {advertiserRowData}: two-dimensional array of length 1
-     *          representing the advertiser data values.
-     * @param {advertiserHeaderData}: two-dimensional array of length 1
-     *          representing the advertiser data keys.
-     * @param {advertiserPartnerId}: the partner ID associated with the
-     *          advertiser to be created.
+     * @param {int!} advertiserRow: row index of the advertiser data to create.
+     * @param {array!} advertiserRowData: two-dimensional array of length 1
+     *           representing the advertiser data values.
+     * @param {array!} advertiserHeaderData: two-dimensional array of length 1
+     *           representing the advertiser data keys.
+     * @param {string} advertiserPartnerId: the partner ID associated with the
+     *           advertiser to be created.
      */
     createAdvertiser: function(
-      advertiserRow,
-      advertiserRowData,
-      advertiserHeaderData,
-      advertiserPartnerId) {
-
+        advertiserRow, advertiserRowData, advertiserHeaderData,
+        advertiserPartnerId) {
       var advertiserPayload = ApiResource.Advertiser.buildAdvertiserPayload(
-        advertiserRowData,
-        advertiserHeaderData,
-        advertiserPartnerId,
-        true);
+          advertiserRowData, advertiserHeaderData, advertiserPartnerId, true);
 
       var uri = 'advertisers';
       var method = 'POST';
       var params = {
         'method': method,
         'payload': JSON.stringify(advertiserPayload)
-      }
+      };
       var callback = ApiResource.Advertiser.handleUpsertAdvertiser;
 
-      ApiUtil.prepareAndExecuteApiRequest(method, uri, params, false, callback, advertiserRow);
+      ApiUtil.prepareAndExecuteApiRequest(
+          method, uri, params, false, callback, advertiserRow);
     },
 
     /**
      * Response handler for the @link {ApiResource.Advertiser.createAdvertiser}
      * or the @link {ApiResource.Advertiser.patchAdvertiser}.
      *
-     * @param {result}: the API response JSON object.
-     * @param {advertiserRow}: row index of the advertiser that was
-     *          created or updated.
+     * @param {Object!} result: the API response JSON object.
+     * @param {int!} advertiserRow: row index of the advertiser that was
+     *           created or updated.
      */
     handleUpsertAdvertiser: function(result, advertiserRow) {
-      var advertiserOutput = ApiResource.Advertiser.buildAdvertiserOutput(result);
+      var advertiserOutput =
+          ApiResource.Advertiser.buildAdvertiserOutput(result);
       var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
 
       SheetUtil.outputInRange(
-        sheetConfig['name'],
-        advertiserRow,
-        sheetConfig['rangeStartCol'],
-        [advertiserOutput]);
+          sheetConfig['name'], advertiserRow, sheetConfig['rangeStartCol'],
+          [advertiserOutput]);
     },
 
     /**
      * Modifies the values of an existing advertiser resource.
      *
-     * @param {advertiserRow}: row index of the advertiser data to create.
-     * @param {advertiserRowData}: two-dimensional array of length 1
-     *          representing the advertiser data values.
-     * @param {advertiserHeaderData}: two-dimensional array of length 1
-     *          representing the advertiser data keys.
+     * @param {int!} advertiserRow: row index of the advertiser data to create.
+     * @param {array!} advertiserRowData: two-dimensional array of length 1
+     *           representing the advertiser data values.
+     * @param {array!} advertiserHeaderData: two-dimensional array of length 1
+     *           representing the advertiser data keys.
      */
     patchAdvertiser: function(
-      advertiserRow,
-      advertiserRowData,
-      advertiserHeaderData) {
-
+        advertiserRow, advertiserRowData, advertiserHeaderData) {
       var advertiserPayload = ApiResource.Advertiser.buildAdvertiserPayload(
-        advertiserRowData,
-        advertiserHeaderData);
+          advertiserRowData, advertiserHeaderData);
       var advertiserId = advertiserPayload['advertiserId'];
-      var updateMask = ApiResource.Advertiser.buildAdvertiserPatchUpdateMask(advertiserHeaderData);
+      var updateMask = ApiResource.Advertiser.buildAdvertiserPatchUpdateMask(
+          advertiserHeaderData);
 
       var uri = `advertisers/${advertiserId}?updateMask=${updateMask}`;
       var method = 'PATCH';
       var params = {
         'method': method,
         'payload': JSON.stringify(advertiserPayload)
-      }
+      };
       var callback = ApiResource.Advertiser.handleUpsertAdvertiser;
 
-      ApiUtil.prepareAndExecuteApiRequest(method, uri, params, true, callback, advertiserRow);
+      ApiUtil.prepareAndExecuteApiRequest(
+          method, uri, params, true, callback, advertiserRow);
     },
 
     /**
      * Deletes an existing advertiser resource.
-     * i
-     * @param {advertiserRow}: row index of the advertiser data to create.
-     * @param {advertiserRowData}: two-dimensional array of length 1
-     *          representing the advertiser data values.
+     *
+     * @param {int!} advertiserRow: row index of the advertiser data to create.
+     * @param {array!} advertiserRowData: two-dimensional array of length 1
+     *           representing the advertiser data values.
      */
     deleteAdvertiser: function(advertiserRow, advertiserRowData) {
       var advertiserId = advertiserRowData[0][0];
 
       var uri = `advertisers/${advertiserId}`;
       var method = 'DELETE';
-      var params = {
-        'method': method
-      }
+      var params = {'method': method};
       var callback = ApiResource.Advertiser.handleDeleteAdvertiser;
 
-      ApiUtil.prepareAndExecuteApiRequest(method, uri, params, true, callback, advertiserRow);
+      ApiUtil.prepareAndExecuteApiRequest(
+          method, uri, params, true, callback, advertiserRow);
     },
 
     /**
      * Response handler for the @link {ApiResource.Advertiser.deleteAdvertiser}.
      *
-     * @param {result}: the API response JSON object.
-     * @param {advertiserRow}: row index of the advertiser that was
-     *          created or updated.
+     * @param {Object!} result: the API response JSON object.
+     * @param {int!} advertiserRow: row index of the advertiser that was
+     *           created or updated.
      */
     handleDeleteAdvertiser: function(result, advertiserRow) {
       var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
@@ -207,13 +193,11 @@ var ApiResource = {
     /**
      * Retrieves the data for an existing advertiser by advertiser ID.
      *
-     * @param {advertiserId}: the advertiser ID to use.
+     * @param {string} advertiserId: the advertiser ID to use.
      */
     getAdvertiser: function(advertiserId) {
       var uri = `advertisers/${advertiserId}`;
-      var params = {
-        'method': 'get'
-      }
+      var params = {'method': 'get'};
       var callback = ApiResource.Advertiser.handleGetAdvertiser;
 
       ApiUtil.prepareAndExecuteApiGetRequest(uri, params, callback);
@@ -222,27 +206,23 @@ var ApiResource = {
     /**
      * Response handler for the @link {ApiResource.Advertiser.getAdvertiser}.
      *
-     * @param {result}: the API response JSON object.
+     * @param {Object!} result: the API response JSON object.
      */
     handleGetAdvertiser: function(result) {
       var advertiserId = result['advertiserId'];
       var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
 
       var results = SheetUtil.findInRange(
-        [advertiserId],
-        sheetConfig['name'],
-        sheetConfig['rangeStartRow'],
-        sheetConfig['primaryIdCol'],
-        sheetConfig['primaryIdCol']);
+          [advertiserId], sheetConfig['name'], sheetConfig['rangeStartRow'],
+          sheetConfig['primaryIdCol'], sheetConfig['primaryIdCol']);
 
       if (results[advertiserId].length !== 0) {
-        var advertiserOutput = ApiResource.Advertiser.buildAdvertiserOutput(result);
+        var advertiserOutput =
+            ApiResource.Advertiser.buildAdvertiserOutput(result);
 
         SheetUtil.outputInRange(
-          sheetConfig['name'],
-          results[advertiserId][0],
-          sheetConfig['rangeStartCol'],
-          [advertiserOutput]);
+            sheetConfig['name'], results[advertiserId][0],
+            sheetConfig['rangeStartCol'], [advertiserOutput]);
       }
     },
 
@@ -250,41 +230,45 @@ var ApiResource = {
      * Constructs the data to output in the sheet from the given advertiser
      * API response.
      *
-     * @param {advertiser}: the advertiser object as received from the API.
+     * @param {Object!} advertiser: the advertiser object as received from the
+     *     API.
      *
-     * @return two-dimensional array representing the advertiser output
-     *          ready for writing to the sheet.
+     * @return {array!} two-dimensional array representing the advertiser output
+     *           ready for writing to the sheet.
      */
     buildAdvertiserOutput(advertiser) {
       var advertiserOutput = [
-        advertiser['displayName'],
-        advertiser['entityStatus'],
+        advertiser['displayName'], advertiser['entityStatus'],
         JSON.stringify(advertiser['generalConfig']),
         JSON.stringify(advertiser['adServerConfig']),
         JSON.stringify(advertiser['creativeConfig']),
-        advertiser['advertiserId'],
-        'READ'];
+        advertiser['advertiserId'], 'READ'
+      ];
 
       return advertiserOutput;
     },
 
     /**
-     * Constructs the payload to send for @link {ApiResource.Advertiser.createAdvertiser}
+     * Constructs the payload to send for
+     * @link {ApiResource.Advertiser.createAdvertiser}
      * or @link {ApiResource.Advertiser.patchAdvertiser}.
      *
-     * @param {advertiserRowData}: two-dimensional array of length 1
-     *          representing the advertiser data values.
-     * @param {advertiserHeaderData}: two-dimensional array of length 1
-     *          representing the advertiser data keys.
-     * @param {advertiserPartnerId}: the partner ID associated with the
-     *          advertiser to be created.
-     * @param {create}: boolean representing whether the payload will be used for
-     *          the @link {ApiResource.Advertiser.createAdvertiser} operation.
-     *          Some fields need to be removed for the Create operation to succeed.
+     * @param {array!} advertiserRowData: two-dimensional array of length 1
+     *           representing the advertiser data values.
+     * @param {array!} advertiserHeaderData: two-dimensional array of length 1
+     *           representing the advertiser data keys.
+     * @param {string} advertiserPartnerId: the partner ID associated with the
+     *           advertiser to be created.
+     * @param {boolean} create: boolean representing whether the payload will be
+     *           used for the @link {ApiResource.Advertiser.createAdvertiser}
+     *           operation. Some fields need to be removed for the Create
+     *           operation to succeed.
      *
-     * @return {Object} representing JSON payload to be sent along with the API request.
+     * @return {Object!} representing JSON payload to be sent along with the API
+     *           request.
      */
-    buildAdvertiserPayload(advertiserRowData, advertiserHeaderData, advertiserPartnerId, create) {
+    buildAdvertiserPayload(
+        advertiserRowData, advertiserHeaderData, advertiserPartnerId, create) {
       var payload = {};
 
       if (advertiserPartnerId !== 'undefined') {
@@ -295,7 +279,7 @@ var ApiResource = {
         var colValue = advertiserRowData[0][col];
 
         if (colName === 'MODIFICATION_STATUS' || colValue === '' ||
-              (create === true && colName === 'advertiserId')) {
+            (create === true && colName === 'advertiserId')) {
           continue;
         }
         try {
@@ -319,8 +303,11 @@ var ApiResource = {
      * request. The updateMask consists of comma-separated advertiser property
      * keys that have changed.
      *
-     * @param {advertiserHeaderData}: two-dimensional array of length 1
-     *          representing the advertiser data keys.
+     * @param {array!} advertiserHeaderData: two-dimensional array of length 1
+     *           representing the advertiser data keys.
+     *
+     * @return {string} representing the comma-separated advertiser property
+     *           keys that have changed
      */
     buildAdvertiserPatchUpdateMask(advertiserHeaderData) {
       var cols = advertiserHeaderData[0].filter(function(col) {

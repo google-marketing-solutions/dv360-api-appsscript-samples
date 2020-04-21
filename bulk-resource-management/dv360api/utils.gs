@@ -1,11 +1,13 @@
 /**
+ * @license
+ *
  * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,10 +17,10 @@
  */
 
 /**
- * This Google Apps Script file contains utility methods for interacting
- * with the DV360 API using the @link {UrlFetchApp} and @link {ScriptApp}
- * classes. Most of the methods here can be replaced once the API is
- * available as an 'Advanced Google Service' integration within the
+ * @fileoverview This Google Apps Script file contains utility methods for
+ * interacting with the DV360 API using the @link {UrlFetchApp} and
+ * @link {ScriptApp} classes. Most of the methods here can be replaced once the
+ * API is available as an 'Advanced Google Service' integration within the
  * built-in Apps Script 'Resources' section.
  */
 
@@ -29,12 +31,14 @@ var ApiUtil = {
    * API. Delegates to @link {ApiUtil.executeApiGetRequest} for paged response
    * handling.
    *
-   * @param {requestUri}: the URI of the specific GET Resource to request.
-   * @param {requestParams}: the options to use for the GET request.
-   * @param {requestCallback}: the method to call after the request has
-   *          executed successfully.
+   * @param {string} requestUri: the URI of the specific GET Resource to
+   *     request.
+   * @param {Object!} requestParams: the options to use for the GET request.
+   * @param {Object!} requestCallback: the method to call after the request has
+   *           executed successfully.
    */
-  prepareAndExecuteApiGetRequest: function(requestUri, requestParams, requestCallback) {
+  prepareAndExecuteApiGetRequest: function(
+      requestUri, requestParams, requestCallback) {
     var url = this.buildApiUrl(requestUri);
     var params = this.buildApiParams(requestParams);
 
@@ -49,10 +53,10 @@ var ApiUtil = {
    * @link {ApiUtil.executeApiRequest} for the concrete request and
    * response handling.
    *
-   * @param {url}: the url of the GET request.
-   * @param {params}: the options to use for the GET request.
-   * @param {requestCallback}: the method to call after the request has
-   *          executed successfully.
+   * @param {string} url: the url of the GET request.
+   * @param {Object!} params: the options to use for the GET request.
+   * @param {Object!} requestCallback: the method to call after the request has
+   *           executed successfully.
    */
   executeApiGetRequest(url, params, requestCallback) {
     var maxPages = 50;
@@ -60,9 +64,10 @@ var ApiUtil = {
     var pageToken;
 
     do {
-      if (pageCount > maxPages/2) {
-        console.log('Fetching results page: ' + pageCount +
-        '... Will not fetch more than ' + maxPages + ' pages!');
+      if (pageCount > maxPages / 2) {
+        console.log(
+            'Fetching results page: ' + pageCount +
+            '... Will not fetch more than ' + maxPages + ' pages!');
       } else {
         console.log(`Fetching results page: ${pageCount}...`);
       }
@@ -84,24 +89,19 @@ var ApiUtil = {
    * API. Delegates to @link {ApiUtil.executeApiRequest} for the concrete
    * response handling.
    *
-   * @param {requestMethod}: the non-GET HTTP method.
-   * @param {requestUri}: the URI of the specific Resource to request.
-   * @param {requestParams}: the options to use for the request.
-   * @param {retryOnFailure}: whether the operation should be retried
-   *          in case of failure or not.
-   * @param {requestCallback}: the method to call after the request has
-   *          executed successfully.
-   * @param {requestCallbackParams}: params to pass when calling the
-   *          @param {requestCallback}.
+   * @param {string} requestMethod: the non-GET HTTP method.
+   * @param {string} requestUri: the URI of the specific Resource to request.
+   * @param {Object!} requestParams: the options to use for the request.
+   * @param {boolean} retryOnFailure}: whether the operation should be retried
+   *           in case of failure or not.
+   * @param {Object!} requestCallback}: the method to call after the request has
+   *           executed successfully.
+   * @param {Object?} requestCallbackParams}: params to pass when calling
+   *           the @param {requestCallback}.
    */
   prepareAndExecuteApiRequest: function(
-    requestMethod,
-    requestUri,
-    requestParams,
-    retryOnFailure,
-    requestCallback,
-    requestCallbackParams) {
-
+      requestMethod, requestUri, requestParams, retryOnFailure, requestCallback,
+      requestCallbackParams) {
     var url = this.buildApiUrl(requestUri);
     var params = this.buildApiParams(requestParams);
 
@@ -116,14 +116,14 @@ var ApiUtil = {
    * data parsing. Re-attempts failed executions up to the value of
    * 'maxRetries'.
    *
-   * @param {url}: the url of the request.
-   * @param {params}: the options to use for the request.
-   * @param {retryOnFailure}: whether the operation should be retried
-   *          in case of failure or not.
-   * @param {operationCount}: the number of failed attempts made.
+   * @param {string} url: the url of the request.
+   * @param {Object!} params: the options to use for the request.
+   * @param {boolean} retryOnFailure: whether the operation should be retried
+   *           in case of failure or not.
+   * @param {int?} operationCount: the number of failed attempts made.
    *
-   * @return {Object} representing the parsed JSON response data, or an
-   *          empty object for empty responses.
+   * @return {Object!} representing the parsed JSON response data, or an
+   *           empty object for empty responses.
    */
   executeApiRequest(url, params, retryOnFailure, operationCount) {
     operationCount = Util.coalesce(operationCount, 0);
@@ -138,9 +138,8 @@ var ApiUtil = {
           'message': response.getContentText()
         });
       }
-      return response.getContentText() ?
-        JSON.parse(response.getContentText()) :
-        {};
+      return response.getContentText() ? JSON.parse(response.getContentText()) :
+                                         {};
     } catch (e) {
       console.error(`Operation failed with exception: ${e}`);
 
@@ -151,22 +150,24 @@ var ApiUtil = {
         operationCount += 1;
         this.executeApiRequest(url, params, retryOnFailure, operationCount);
       } else {
-        console.warn('Retry on failure not supported or all retries ' +
-          'have been exhausted... Failing!');
-        throw new Error('Sorry an error ocurred, please check your input and try again!');
+        console.warn(
+            'Retry on failure not supported or all retries ' +
+            'have been exhausted... Failing!');
+        throw new Error(
+            'Sorry an error ocurred, please check your input and try again!');
       }
     }
   },
 
   /**
-   * Constructs the fully-qualified URL to the DV360 API using the given
-   * @param {requestUri}.
+   * Constructs the fully-qualified URL to the DV360 API using the
+   * given @param {requestUri}.
    *
-   * @param {requestUri}: the URI of the specific Resource to request.
+   * @param {string} requestUri: the URI of the specific Resource to request.
    *
-   * @return {String} representing the fully-qualified DV360 API URL.
+   * @return {string} representing the fully-qualified DV360 API URL.
    */
-  buildApiUrl(requesUri) {
+  buildApiUrl(requestUri) {
     var apiEndpoint = 'https://displayvideo.googleapis.com';
     var apiVersion = 'v1beta';
 
@@ -177,19 +178,17 @@ var ApiUtil = {
    * Constructs the options to use for the DV360 API request, extending
    * some default options with the given @param {requestParams}.
    *
-   * @param {requestParams}: the options to use for the request.
+   * @param {Object!} requestParams: the options to use for the request.
    *
-   * @return {Object} representing the extended request options to use.
+   * @return {Object!} representing the extended request options to use.
    * @see {utils.gs} @link {Util.extend}.
    */
-  buildApiParams(requesParams) {
+  buildApiParams(requestParams) {
     var token = ScriptApp.getOAuthToken();
     var params = {
       'contentType': 'application/json',
-      'headers': {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      }
+      'headers':
+          {'Authorization': `Bearer ${token}`, 'Accept': 'application/json'}
     };
     params = Util.extend(params, requesParams);
 
@@ -202,7 +201,7 @@ var ApiUtil = {
    * and modifying the @param {params} of the request directly (i.e.
    * there is no return value for this method).
    *
-   * @param {params}: the options to use for the request.
+   * @param {Object!} params: the options to use for the request.
    */
   refreshAuthToken(params) {
     var token = ScriptApp.getOAuthToken();
@@ -214,10 +213,10 @@ var ApiUtil = {
    * passing in the @param {callbackParams} along with the parsed
    * API response.
    *
-   * @param {response}: the parsed API response data.
-   * @param {callback}: the method to trigger.
-   * @param {callbackParams}: the params to pass when calling
-   *          @param {callback}.
+   * @param {Object!} response: the parsed API response data.
+   * @param {Object!} callback: the method to trigger.
+   * @param {Object?} callbackParams: the params to pass when
+   *           calling @param {callback}.
    */
   handleResponse(response, callback, callbackParams) {
     callback(response, callbackParams);

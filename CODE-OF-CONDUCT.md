@@ -44,7 +44,7 @@ environment where participants feel welcome and safe.
 Some Google open source projects may adopt a project-specific code of conduct.
 In those cases, a Google employee will be identified as the Project Steward,
 who will receive and handle reports of code of conduct violations. In the event
-that a project hasn’t identified a Project Steward, you can report problems by
+that a project hasn't identified a Project Steward, you can report problems by
 emailing opensource@google.com.
 
 We will investigate every complaint, but you may not receive a direct response.
