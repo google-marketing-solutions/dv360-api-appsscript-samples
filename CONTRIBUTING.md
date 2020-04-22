@@ -25,4 +25,5 @@ information on using pull requests.
 ## Community Guidelines
 
 This project follows [Google's Open Source Community
-Guidelines](https://opensource.google/conduct/).
+Guidelines](https://opensource.google/conduct/), which are also detailed in
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
