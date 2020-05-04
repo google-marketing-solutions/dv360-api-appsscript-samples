@@ -7,6 +7,8 @@ API, written in Google Apps Script.
 by Google and are provided only as a reference. See [LICENSE](LICENSE.md)
 for more information.
 
+Contributions are highly encouraged; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Table of Contents
 
 [Bulk Resource Management](#bulk-resource-management)
