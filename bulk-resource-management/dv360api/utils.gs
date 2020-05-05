@@ -169,9 +169,9 @@ var ApiUtil = {
    */
   buildApiUrl(requestUri) {
     var apiEndpoint = 'https://displayvideo.googleapis.com';
-    var apiVersion = 'v1beta';
+    var apiVersion = 'v1';
 
-    return `${apiEndpoint}/${apiVersion}/${requesUri}`;
+    return `${apiEndpoint}/${apiVersion}/${requestUri}`;
   },
 
   /**
@@ -190,7 +190,7 @@ var ApiUtil = {
       'headers':
           {'Authorization': `Bearer ${token}`, 'Accept': 'application/json'}
     };
-    params = Util.extend(params, requesParams);
+    params = Util.extend(params, requestParams);
 
     return params;
   },
