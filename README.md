@@ -25,8 +25,7 @@ that is preconfigured for bulk management.
 1.  Create a new Google Cloud Platform (GCP) Project that will be linked to your
     script.
 2.  [Open the GCP console](https://console.cloud.google.com/) and navigate to
-    _APIs & Services > Library_ and enable both the _Display & Video 360 API_
-    as well as the _Google Sheets API_.
+    _APIs & Services > Library_ and enable the _Display & Video 360 API_.
 3.  Create an Apps Script project that is linked to a Google Spreadsheet by
     navigating to _Tools > Script Editor_ within the desired Spreadsheet.
     Alternatively open the script directly from the
