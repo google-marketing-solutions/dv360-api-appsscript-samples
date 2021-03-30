@@ -1,0 +1,9 @@
+.idea
+**/.clasp.json
+**/.clasprc.json
+**/creds.json
+**/._creds.json
+**/package-lock.json
+**/package.json
+**/node_modules
+**/.eslintrc.js
