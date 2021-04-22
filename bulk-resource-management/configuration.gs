@@ -25,31 +25,58 @@
 
 /**
  * Configuration for each sheet in the associated spreadsheet.
- *
- * @param {string} name: the name of the sheet.
- * @param {string} inputIdCell: the cell value of the main input ID
- *           upon which menu operations will work.
- * @param {int!} headerRow: the header row value of the data table.
- * @param {int!} rangeStartRow: the start row value of the data table.
- * @param {int!} rangeStartCol: the start column value of the data table.
- * @param {int!} primaryIdCol: the column value representing the
- *           entity's primary Id.
- * @param {int!} modificationStatusCol: the column value representing
- *           the modific ation status of the associated row.
- *           One of READ | CREATE | UPDATE | DELETE.
  */
-var SHEET_CONFIG = {
-  'ADVERTISERS': {
-    'name': 'Advertisers',
-    'inputIdCell': 'B1',
-    'headerRow': 3,
-    'rangeStartRow': 4,
-    'rangeStartCol': 1,
-    'primaryIdCol': 6,
-    'modificationStatusCol': 7
-  },
-  'CAMPAIGNS': {},
-  'INSERTION_ORDERS': {},
-  'LINE_ITEMS': {},
-  'CREATIVES': {}
+class SheetConfig {
+  /**
+   * Creates a new SheetConfig object
+   * @param {string} sheetName name of sheet controlled by this config
+   * @param {string} uri path used as basis for API calls
+   * @param {string} apiFieldName name of array in GET response
+   * @param {!Object} inputCells where to find common parameters to queries
+   * @param {string=} filter part of URI to narrow GET results
+   */
+  constructor(sheetName, uri, apiFieldName, inputCells, filter = '') {
+    if (!sheetName || !uri || !apiFieldName || !inputCells) {
+      throw new Error('Incorrect config!');
+    }
+    /** @const {string} */
+    this.name = sheetName;
+    /** @const {string} */
+    this.uri = uri;
+    /** @const {string} */
+    this.apiFieldName = apiFieldName;
+    /** @const {!Object} */
+    this.inputCells = inputCells;
+    /** @const {string} */
+    this.filter = filter;
+    /** @const {number} */
+    this.headerRow = 4;
+    /** @const {number} */
+    this.rangeStartRow = 5;
+    /** @const {number} */
+    this.rangeStartCol = 1;
+    /** @const {number} */
+    this.primaryIdCol = 2;
+  }
+}
+
+// eslint-disable-next-line no-unused-vars
+const SHEET_CONFIG = {
+  ADVERTISERS: new SheetConfig(
+      'Advertisers', 'advertisers?partnerId=${partnerId}', 'advertisers',
+      {partnerId: 'B1'}),
+  CAMPAIGNS: new SheetConfig(
+      'Campaigns', 'advertisers/${advertiserId}/campaigns', 'campaigns',
+      {advertiserId: 'C1'}),
+  INSERTION_ORDERS: new SheetConfig(
+      'Insertion Orders', 'advertisers/${advertiserId}/insertionOrders',
+      'insertionOrders', {advertiserId: 'C1', campaignId: 'C2'},
+      'campaignId=${campaignId}'),
+  LINE_ITEMS: new SheetConfig(
+      'Line Items', 'advertisers/${advertiserId}/lineItems', 'lineItems',
+      {advertiserId: 'C1', campaignId: 'C2', insertionOrderId: 'C3'},
+      'campaignId=${campaignId} AND insertionOrderId=${insertionOrderId}'),
+  CREATIVES: new SheetConfig(
+      'Creatives', 'advertisers/${advertiserId}/creatives', 'creatives',
+      {advertiserId: 'C1', campaignId: 'C2'}, 'campaignId=${campaignId}'),
 };
