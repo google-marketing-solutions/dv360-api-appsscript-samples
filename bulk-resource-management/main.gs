@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /**
  * @license
  *
@@ -32,83 +31,122 @@
  * DV360 API operations, grouped by the associated API operation resource.
  */
 function onOpen() {
+  var advertisersSubMenu =
+      SpreadsheetApp.getUi()
+          .createMenu('Advertisers')
+          .addItem('List Advertisers', 'listAdvertisers')
+          .addItem('Modify Advertisers', 'modifyAdvertisers');
+
   SpreadsheetApp.getUi()
-      .createMenu('DV360 Functions')
-      .addItem('Download Advertisers', 'downloadAdvertisers')
-      .addSeparator()
-      .addItem('Download Campaigns', 'downloadCampaigns')
-      .addItem('Upload Campaigns', 'uploadCampaigns')
-      .addSeparator()
-      .addItem('Download Insertion Orders', 'downloadInsertionOrders')
-      .addItem('Upload Insertion Orders', 'uploadInsertionOrders')
-      .addSeparator()
-      .addItem('Download Line Items', 'downloadLineItems')
-      .addItem('Upload Line Items', 'uploadLineItems')
-      .addSeparator()
-      .addItem('Download Creatives', 'downloadCreatives')
+      .createAddonMenu()
+      .addSubMenu(advertisersSubMenu)
       .addToUi();
 }
 
 /**
- * Downloads list of advertisers and fills the sheet with data.
+ * Extracts the 'Partner Id' from the 'Advertisers' Sheet and uses it
+ * to fetch all associated advertisers from the @link {ApiResource}.
+ *
+ * @see {api_resources.gs}.
  */
-function downloadAdvertisers() {
-  const resource = new ApiResource(SHEET_CONFIG['ADVERTISERS']);
-  resource.download();
+function listAdvertisers() {
+  var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
+  var partnerId =
+      SheetUtil.getCellValue(sheetConfig['name'], sheetConfig['inputIdCell']);
+
+  ApiResource.Advertiser.listAdvertisers(partnerId);
 }
 
 /**
- * Downloads and displays campaigns for selected advertiser
+ * Reads the data table to extract different operations, then
+ * delegates processing to each operation's dedicated handler.
+ * The operations are defined by the
+ * @link {SHEET_CONFIG.SHEET.modificationStatusCol} values.
+ *
+ * @see {configuration_gs}.
  */
-function downloadCampaigns() {
-  const resource = new ApiResource(SHEET_CONFIG['CAMPAIGNS']);
-  resource.download();
+function modifyAdvertisers() {
+  var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
+
+  var results = SheetUtil.findInRange(
+      ['UPDATE', 'CREATE', 'DELETE'], sheetConfig['name'],
+      sheetConfig['rangeStartRow'], sheetConfig['modificationStatusCol'],
+      sheetConfig['modificationStatusCol']);
+
+  var handlers = {
+    'CREATE': createAdvertisers,
+    'UPDATE': patchAdvertisers,
+    'DELETE': deleteAdvertisers,
+  };
+
+  for (modification in results) {
+    var rows = results[modification];
+
+    if (rows.length !== 0) {
+      var method = handlers[modification];
+      method(rows);
+    }
+  }
 }
 
 /**
- * Upload changes from campaign sheet to DV360.
+ * Dedicated handler for the CREATE Advertiser operation.
+ *
+ * @param {array!} advertiserRows: the affected sheet rows containing
+ *           advertisers to be created.
  */
-function uploadCampaigns() {
-  const resource = new ApiResource(SHEET_CONFIG['CAMPAIGNS']);
-  resource.uploadChanges();
+function createAdvertisers(advertiserRows) {
+  var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
+
+  var headerData = SheetUtil.getRowData(
+      sheetConfig['name'], sheetConfig['headerRow'],
+      sheetConfig['rangeStartCol']);
+  var partnerId =
+      SheetUtil.getCellValue(sheetConfig['name'], sheetConfig['inputIdCell']);
+
+  advertiserRows.forEach(function(row) {
+    var rowData = SheetUtil.getRowData(
+        sheetConfig['name'], row, sheetConfig['rangeStartCol']);
+
+    ApiResource.Advertiser.createAdvertiser(
+        row, rowData, headerData, partnerId);
+  });
 }
 
 /**
- * Downloads insertion orders for selected campaign.
+ * Dedicated handler for the PATCH Advertiser operation.
+ *
+ * @param {array!} advertiserRows: the affected sheet rows containing
+ *           advertisers to be patched.
  */
-function downloadInsertionOrders() {
-  const resource = new ApiResource(SHEET_CONFIG['INSERTION_ORDERS']);
-  resource.download();
+function patchAdvertisers(advertiserRows) {
+  var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
+
+  var headerData = SheetUtil.getRowData(
+      sheetConfig['name'], sheetConfig['headerRow'],
+      sheetConfig['rangeStartCol']);
+
+  advertiserRows.forEach(function(row) {
+    var rowData = SheetUtil.getRowData(
+        sheetConfig['name'], row, sheetConfig['rangeStartCol']);
+
+    ApiResource.Advertiser.patchAdvertiser(row, rowData, headerData);
+  });
 }
 
 /**
- * Uploads changes to insertion orders to DV360.
+ * Dedicated handler for the DELETE Advertiser operation.
+ *
+ * @param {array!} advertiserRows: the affected sheet rows containing
+ *           advertisers to be deleted.
  */
-function uploadInsertionOrders() {
-  const resource = new ApiResource(SHEET_CONFIG['INSERTION_ORDERS']);
-  resource.uploadChanges();
-}
+function deleteAdvertisers(advertiserRows) {
+  var sheetConfig = SHEET_CONFIG['ADVERTISERS'];
 
-/**
- * Downloads all line items of selected IO into the sheet.
- */
-function downloadLineItems() {
-  const resource = new ApiResource(SHEET_CONFIG['LINE_ITEMS']);
-  resource.download();
-}
+  advertiserRows.forEach(function(row) {
+    var rowData = SheetUtil.getRowData(
+        sheetConfig['name'], row, sheetConfig['primaryIdCol']);
 
-/**
- * Upload all changes from the sheet into DV360
- */
-function uploadLineItems() {
-  const resource = new ApiResource(SHEET_CONFIG['LINE_ITEMS']);
-  resource.uploadChanges();
-}
-
-/**
- * Lists all creatives
- */
-function downloadCreatives() {
-  const resource = new ApiResource(SHEET_CONFIG['CREATIVES']);
-  resource.download();
+    ApiResource.Advertiser.deleteAdvertiser(row, rowData);
+  });
 }
