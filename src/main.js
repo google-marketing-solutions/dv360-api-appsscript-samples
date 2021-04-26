@@ -28,32 +28,10 @@
  */
 
 /**
- * Creates an Add-on menu and accompanying sub-menus to handle different
- * DV360 API operations, grouped by the associated API operation resource.
- */
-function onOpen() {
-  SpreadsheetApp.getUi()
-      .createMenu('DV360 Functions')
-      .addItem('Download Advertisers', 'downloadAdvertisers')
-      .addSeparator()
-      .addItem('Download Campaigns', 'downloadCampaigns')
-      .addItem('Upload Campaigns', 'uploadCampaigns')
-      .addSeparator()
-      .addItem('Download Insertion Orders', 'downloadInsertionOrders')
-      .addItem('Upload Insertion Orders', 'uploadInsertionOrders')
-      .addSeparator()
-      .addItem('Download Line Items', 'downloadLineItems')
-      .addItem('Upload Line Items', 'uploadLineItems')
-      .addSeparator()
-      .addItem('Download Creatives', 'downloadCreatives')
-      .addToUi();
-}
-
-/**
  * Downloads list of advertisers and fills the sheet with data.
  */
 function downloadAdvertisers() {
-  const resource = new ApiResource(SHEET_CONFIG['ADVERTISERS']);
+  const resource = new DV360Sheet(SHEET_CONFIG.ADVERTISERS);
   resource.download();
 }
 
@@ -61,7 +39,7 @@ function downloadAdvertisers() {
  * Downloads and displays campaigns for selected advertiser
  */
 function downloadCampaigns() {
-  const resource = new ApiResource(SHEET_CONFIG['CAMPAIGNS']);
+  const resource = new DV360Sheet(SHEET_CONFIG.CAMPAIGNS);
   resource.download();
 }
 
@@ -69,7 +47,7 @@ function downloadCampaigns() {
  * Upload changes from campaign sheet to DV360.
  */
 function uploadCampaigns() {
-  const resource = new ApiResource(SHEET_CONFIG['CAMPAIGNS']);
+  const resource = new DV360Sheet(SHEET_CONFIG.CAMPAIGNS);
   resource.uploadChanges();
 }
 
@@ -77,7 +55,7 @@ function uploadCampaigns() {
  * Downloads insertion orders for selected campaign.
  */
 function downloadInsertionOrders() {
-  const resource = new ApiResource(SHEET_CONFIG['INSERTION_ORDERS']);
+  const resource = new DV360Sheet(SHEET_CONFIG.INSERTION_ORDERS);
   resource.download();
 }
 
@@ -85,7 +63,7 @@ function downloadInsertionOrders() {
  * Uploads changes to insertion orders to DV360.
  */
 function uploadInsertionOrders() {
-  const resource = new ApiResource(SHEET_CONFIG['INSERTION_ORDERS']);
+  const resource = new DV360Sheet(SHEET_CONFIG.INSERTION_ORDERS);
   resource.uploadChanges();
 }
 
@@ -93,7 +71,7 @@ function uploadInsertionOrders() {
  * Downloads all line items of selected IO into the sheet.
  */
 function downloadLineItems() {
-  const resource = new ApiResource(SHEET_CONFIG['LINE_ITEMS']);
+  const resource = new DV360Sheet(SHEET_CONFIG.LINE_ITEMS);
   resource.download();
 }
 
@@ -101,7 +79,7 @@ function downloadLineItems() {
  * Upload all changes from the sheet into DV360
  */
 function uploadLineItems() {
-  const resource = new ApiResource(SHEET_CONFIG['LINE_ITEMS']);
+  const resource = new DV360Sheet(SHEET_CONFIG.LINE_ITEMS);
   resource.uploadChanges();
 }
 
@@ -109,6 +87,21 @@ function uploadLineItems() {
  * Lists all creatives
  */
 function downloadCreatives() {
-  const resource = new ApiResource(SHEET_CONFIG['CREATIVES']);
+  const resource = new DV360Sheet(SHEET_CONFIG.CREATIVES);
   resource.download();
 }
+/**
+ *
+ */
+function downloadTargetingOptions() {
+  const resource = new DV360Sheet(SHEET_CONFIG.TARGETING_OPTIONS);
+  resource.download();
+}
+/**
+ *
+ */
+function searchTargetingOptions() {
+  const resource = new DV360Sheet(SHEET_CONFIG.TARGETING_OPTIONS_SEARCH);
+  resource.download();
+}
+

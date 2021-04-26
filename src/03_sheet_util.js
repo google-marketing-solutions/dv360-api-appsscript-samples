@@ -22,7 +22,60 @@
  * as reading from and writing data to the associated spreadsheet.
  */
 
+/**
+ * Base class to transform entity field to cell value
+ * and back into entity field
+ */
+class CellTranslator {
+  /**
+   *
+   * @param {*} input
+   */
+  toDisplayValue(input) {
+    throw new Error('Not Implemented');
+  }
+
+  /**
+   *
+   * @param {string} cellContent
+   */
+  toEntityField(cellContent) {
+    throw new Error('Not Implemented');
+  }
+}
+
+/**
+ *
+ */
+class DateTranslator extends CellTranslator {
+  /**
+   *
+   * @param {*} input
+   * @return {string}
+   */
+  toDisplayValue(input) {
+    const object = JSON.parse(input);
+    const value = `${object.year}-${object.month}-${object.day}`;
+    return value;
+  }
+
+  /**
+   *
+   * @param {string} cellContent
+   * @return {object} value ready to put into entity field
+   */
+  toEntityField(cellContent) {
+    const date = new Date(cellContent);
+    return {'year': date.getFullYear(),
+      'month': date.getMonth()+1,
+      'day': date.getDate(),
+    };
+  }
+}
+
 const SheetUtil = {
+
+  DATE_TRANSLATOR: new DateTranslator(),
 
   /**
    * Returns the value of the given cell for the given sheet.
@@ -37,6 +90,13 @@ const SheetUtil = {
         spreadsheet.getRange(sheetName + '!' + cellId + ':' + cellId);
 
     return partnerIdCell.getValue();
+  },
+
+  writeCellValue: function(sheetName, row, column, value) {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = spreadsheet.getSheetByName(sheetName);
+    sheet.getRange(row, column, 1, 1).setValues([[value]]);
+    SpreadsheetApp.flush();
   },
 
   /**
@@ -58,6 +118,7 @@ const SheetUtil = {
     sheet
         .getRange(rangeStartRow, rangeStartCol, output.length, output[0].length)
         .setValues(output);
+    SpreadsheetApp.flush();
   },
 
   /**
@@ -78,27 +139,23 @@ const SheetUtil = {
 
     sheet.getRange(lastRow, rangeStartCol, output.length, output[0].length)
         .setValues(output);
+    SpreadsheetApp.flush();
   },
 
   /**
-   * Clears all data in the specified range of the given sheet.
+   * Clears all entity data in the specified sheet.
    *
-   * @param {string} sheetName the name of the sheet
-   * @param {number} rangeStartRow the first row index of data
-   * @param {number} rangeStartCol the first column index of data
-   * @param {number} columnsCount how many columns to clear
-   * @param {number} rowsCount how many rows to clear
+   * @param {!SheetConfig} sheetConfig for the spreadsheet to clean
    */
-  clearRange: function(
-      sheetName, rangeStartRow, rangeStartCol, columnsCount, rowsCount) {
+  clearData: function(sheetConfig) {
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = spreadsheet.getSheetByName(sheetName);
+    const sheet = spreadsheet.getSheetByName(sheetConfig.name);
 
     sheet.getRange(
-        rangeStartRow,
-        rangeStartCol,
-        rowsCount || sheet.getLastRow(),
-        columnsCount || sheet.getLastColumn())
+        sheetConfig.rangeStartRow,
+        sheetConfig.rangeStartCol,
+        sheet.getLastRow(),
+        sheet.getLastColumn())
         .clearContent();
   },
 
@@ -156,6 +213,9 @@ const SheetUtil = {
     const headerRow = this.getHeaderRowData(sheetConfig);
     const rowCount = sheet.getLastRow() - sheetConfig.rangeStartRow + 1;
     const columnCount = headerRow.length - sheetConfig.rangeStartCol + 1;
+    if (rowCount<1 || columnCount<1) {
+      return [];
+    }
     const data = sheet.getRange(
         sheetConfig.rangeStartRow,
         sheetConfig.rangeStartCol,
@@ -163,6 +223,36 @@ const SheetUtil = {
         columnCount
     ).getValues();
     return data;
+  },
+  /**
+   * Returns currently selected row (number) for chosen sheet.
+   * Throws error if currently selected row isn't in data part of the sheet,
+   * or if
+   * @param {!SheetConfig} sheetConfig to look into
+   * @return {number } row number that's currently selected
+   */
+  getCurrentlySelectedDataRowNumber: function(sheetConfig) {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = spreadsheet.getSheetByName(sheetConfig.name);
+    const rowNumber = sheet.getActiveCell().getRowIndex();
+    if (rowNumber < sheetConfig.rangeStartRow) {
+      throw new Error(`Selected cell in sheet ${sheetConfig.name}` +
+        'is not in data range');
+    }
+    return rowNumber;
+  },
+
+  /**
+   * Removes row from the sheet by sheet name and number
+   * @param {SheetConfig} sheetConfig
+   * @param {!Array<number>} rowNumbers
+   */
+  deleteSheetRows: function(sheetConfig, rowNumbers) {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = spreadsheet.getSheetByName(sheetConfig.name);
+
+    const reindexedRows = rowNumbers.map((number, index) => number - index);
+    reindexedRows.forEach((number) => sheet.deleteRow(number));
   },
 };
 
