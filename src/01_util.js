@@ -100,6 +100,10 @@ const Util = {
     return Object.getOwnPropertyNames(Util.flattenObject(ob));
   },
 
+  listFields: function(ob) {
+    return Object.getOwnPropertyNames(ob);
+  },
+
   /**
    * Traverses object's sub-structure and converts it
    *  from {a:{b:{c:"value"}}} to {"a.b.c":"value"}
@@ -133,10 +137,12 @@ const Util = {
    * (aka 'dotted field name')
    * @param {!Object} ob
    * @param {string} fieldName
-   * @return {*} value of given sub-field
+   * @return {*|undefined} value of given sub-field
    */
   getValueByDottedFieldName: function(ob, fieldName) {
-    if (fieldName.indexOf('.') == -1) {
+    if (ob == null) {
+      return undefined;
+    } else if (fieldName.indexOf('.') == -1) {
       return ob[fieldName];
     } else {
       const firstDotIndex = fieldName.indexOf('.');
@@ -144,5 +150,71 @@ const Util = {
       const subFieldPath = fieldName.substring(firstDotIndex + 1);
       return Util.getValueByDottedFieldName(subObject, subFieldPath);
     }
+  },
+  /**
+ *
+ * @param {!Object} ob
+ * @param {string} fieldName
+ * @param {*} value
+ */
+  setValueByDottedFieldName: function(ob, fieldName, value) {
+    if (fieldName.indexOf('.') == -1) {
+      ob[fieldName] = value;
+    } else {
+      const firstDotIndex = fieldName.indexOf('.');
+      const firstLevelFieldName = fieldName.substring(0, firstDotIndex);
+      const subObject = ob[firstLevelFieldName] || {};
+      ob[firstLevelFieldName] = subObject;
+      const subFieldPath = fieldName.substring(firstDotIndex + 1);
+      Util.setValueByDottedFieldName(subObject, subFieldPath, value);
+    }
+  },
+
+  /**
+   * Reads cell content as JSON or, if it fails, returns it verbatim.
+   * @private
+   * @param {string} data cell's content
+   * @return {!Object|string} object or string if not parseable
+   */
+  parseCellContent: function(data) {
+    if (data === '' || data == null) {
+      return '';
+    }
+    if (typeof data != 'string') {
+      return data.toString();
+    }
+    if (data.indexOf('{') < 0) {
+      return data;
+    }
+    try {
+      return JSON.parse(data);
+    } catch (error) {
+      // In case not pareseable, return original.
+      return data.toString();
+    }
+  },
+
+  /**
+   * Returns an array containing all elements of left
+   * that are not present in right one
+   * @param {!Array<object>} left
+   * @param {!Array<object>} right
+   * @return {!Array<object>}
+   */
+  difference(left, right) {
+    return left.filter((object) => !Util.isIn(object, right));
+  },
+
+  /**
+   *
+   * @param {Object} object
+   * @param {!Array<object>} array
+   * @return {boolean}
+   */
+  isIn(object, array) {
+    const filtered = array.filter((member)=>{
+      return JSON.stringify(member) === JSON.stringify(object);
+    });
+    return filtered.length>0;
   },
 };
