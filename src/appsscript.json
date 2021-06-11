@@ -1,0 +1,19 @@
+{
+    "timeZone": "Europe/Warsaw",
+    "dependencies": {
+      "enabledAdvancedServices": [
+        {
+          "userSymbol": "Sheets",
+          "serviceId": "sheets",
+          "version": "v4"
+        }
+      ]
+    },
+    "exceptionLogging": "STACKDRIVER",
+    "runtimeVersion": "V8",
+    "oauthScopes": [
+      "https://www.googleapis.com/auth/script.external_request",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/display-video"
+    ]
+}

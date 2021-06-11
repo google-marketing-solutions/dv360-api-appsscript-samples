@@ -29,18 +29,12 @@ const ApiUtil = {
    * @param {string} requestUri path to query
    * @param {function(!Object): undefined} callback
    *   executed with each page of response
-   * @param {function(!Object): undefined} errback
-   *   callback in case of errors
-   * @param {?Array<!Object>} callbackParams
-   *   static parameters for callback/errback
    */
-  executeApiGetRequest: function(
-      requestUri, callback, errback, callbackParams) {
+  executeApiGetRequest: function(requestUri, callback) {
     const requestParams = {
       'method': 'get',
     };
-    ApiUtil.executeGenericRequest_(
-        requestUri, requestParams, callback, errback, callbackParams);
+    ApiUtil.executeGenericRequest_(requestUri, requestParams, callback);
   },
 
   /**
@@ -49,19 +43,13 @@ const ApiUtil = {
    * @param {!Object} payload what to include as body
    * @param {function(!Object): undefined} callback
    *   executed with each page of response
-   * @param {function(!Object): undefined} errback
-   *   callback in case of errors
-   * @param {?Array<!Object>} callbackParams
-   *   static parameters for callback/errback
    */
-  executeApiPatchRequest: function(
-      requestUri, payload, callback, errback, callbackParams) {
+  executeApiPatchRequest: function(requestUri, payload, callback) {
     const requestParams = {
       method: 'patch',
       payload: JSON.stringify(payload),
     };
-    ApiUtil.executeGenericRequest_(
-        requestUri, requestParams, callback, errback, callbackParams);
+    ApiUtil.executeGenericRequest_(requestUri, requestParams, callback);
   },
 
   /**
@@ -70,38 +58,25 @@ const ApiUtil = {
    * @param {!Object} payload what to include as body
    * @param {function(!Object): undefined} callback
    *   executed with each page of response
-   * @param {function(!Object): undefined} errback
-   *   callback in case of errors
-   * @param {?Array<!Object>} callbackParams
-   *   static parameters for callback/errback
    */
-  executeApiCreateRequest: function(
-      requestUri, payload, callback, errback, callbackParams) {
+  executeApiPostRequest: function(requestUri, payload, callback) {
     const requestParams = {
       method: 'post',
       payload: JSON.stringify(payload),
     };
-    ApiUtil.executeGenericRequest_(
-        requestUri, requestParams, callback, errback, callbackParams);
+    ApiUtil.executeGenericRequest_(requestUri, requestParams, callback);
   },
   /**
    * Executes single DELETE request and fires callback.
    * @param {string} requestUri path to query
-   * @param {?Object} payload ignored
    * @param {function(!Object): undefined} callback
    *   executed with each page of response
-   * @param {function(!Object): undefined} errback
-   *   callback in case of errors
-   * @param {?Array<!Object>} callbackParams
-   *   static parameters for callback/errback
    */
-  executeApiDeleteRequest: function(
-      requestUri, payload, callback, errback, callbackParams) {
+  executeApiDeleteRequest: function(requestUri, callback) {
     const requestParams = {
       method: 'delete',
     };
-    ApiUtil.executeGenericRequest_(
-        requestUri, requestParams, callback, errback, callbackParams);
+    ApiUtil.executeGenericRequest_(requestUri, requestParams, callback);
   },
   /**
    * Runs REST request using UrlFetchApp. Handles paging, executing
@@ -112,48 +87,43 @@ const ApiUtil = {
    * @param {string} requestUri path to call
    * @param {!Object} requestParams params to include (UrlFetchApp format)
    * @param {function(!Object): undefined} callback to be called once per page
-   * @param {function(!Object): undefined} errback in case of errors
-   * @param {?Array<!Object>} callbackParams common parameters to callbacks
    */
-  executeGenericRequest_: function(
-      requestUri, requestParams, callback, errback, callbackParams) {
+  executeGenericRequest_: function(requestUri, requestParams, callback) {
     const baseUrl = ApiUtil.buildApiUrl_(requestUri);
     const params = ApiUtil.buildApiParams_(requestParams);
 
     let url = baseUrl;
     let morePages = true;
-    try {
-      while (morePages) {
-        console.log(`Fetching ${params.method} request from ${url}`);
-        const response = UrlFetchApp.fetch(url, params);
-        if (response.getResponseCode() / 100 !== 2) {
-          throw new Error(response.getContentText());
-        }
-        const result = response.getContentText() ?
-            JSON.parse(response.getContentText()) :
-            {};
-        callback(result, callbackParams);
-        morePages = result.nextPageToken != undefined;
-        if (morePages) {
-          url = baseUrl + Util.queryParamSeparator(baseUrl) +
-              `pageToken=${result.nextPageToken}`;
-        }
+    while (morePages) {
+      console.log(`Fetching ${params.method} request from ${url}`);
+      const response = UrlFetchApp.fetch(url, params);
+      if (response.getResponseCode() / 100 !== 2) {
+        throw new Error(response.getContentText());
       }
-    } catch (error) {
-      errback(error, callbackParams);
+      const result = response.getContentText() ?
+          JSON.parse(response.getContentText()) :
+          {};
+      callback(result);
+      morePages = result.nextPageToken != undefined;
+      if (morePages) {
+        url = baseUrl + Util.queryParamSeparator(baseUrl) +
+            `pageToken=${result.nextPageToken}`;
+      }
     }
   },
 
   /**
    * Takes in a string with placeholders like ${variable}
    * and replaces them with values found in selected sheet's top part.
-   * @param {!SheetConfig} sheetConfig where to find inputs
    * @param {string} input (partial) uri with placeholders
+   * @param {?object} params values to replace in input
    * @return {string} uri with replaced placeholders
    */
-  replaceInputValues(sheetConfig, input) {
+  replaceInputValues(input, params) {
     let output = input;
-    const params = SheetUtil.getInputCellValues(sheetConfig);
+    if (params == null) {
+      return input;
+    }
     for (const [name, value] of Object.entries(params)) {
       output = output.replace('${' + name + '}', value);
     }
