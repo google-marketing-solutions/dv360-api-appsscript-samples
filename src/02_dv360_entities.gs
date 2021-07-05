@@ -53,7 +53,7 @@ class DV360Entity {
    */
   getPatchMask(modified) {
     const changedFields =
-        Util.listFields(modified)
+        Object.getOwnPropertyNames(modified)
             .filter((field) => field != this.primaryIdField_)
             .filter((field) => field != 'updateTime')
             .filter(

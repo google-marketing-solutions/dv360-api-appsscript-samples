@@ -22,7 +22,6 @@
  */
 class DV360Resource {
   /**
-   *
    * @param {string} baseUri
    * @param {string} apiFieldName
    * @param {string} primaryIdField
@@ -64,7 +63,7 @@ class DV360Resource {
   buildListUri_(parameters) {
     let uri = this.baseUri_;
     if (this.filter_ !== '') {
-      uri += Util.queryParamSeparator(uri) + `filter=${this.filter_}`;
+      uri = Util.modifyUrlQueryString(uri, 'filter', this.filter_);
     }
     return ApiUtil.replaceInputValues(uri, parameters);
   }

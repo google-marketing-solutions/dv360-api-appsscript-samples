@@ -61,13 +61,14 @@ class SheetConfig {
 }
 
 // eslint-disable-next-line no-unused-vars
+const DATE_TRANSLATOR = new DateTranslator();
 const SHEET_CONFIG = {
   ADVERTISERS:
       new SheetConfig('Advertisers', DV360.Advertisers, {partnerId: 'B1'}, 4),
   CAMPAIGNS:
       new SheetConfig('Campaigns', DV360.Campaigns, {advertiserId: 'C1'}, 4, {
-        'campaignFlight.plannedDates.startDate': SheetUtil.DATE_TRANSLATOR,
-        'campaignFlight.plannedDates.endDate': SheetUtil.DATE_TRANSLATOR
+        'campaignFlight.plannedDates.startDate': DATE_TRANSLATOR,
+        'campaignFlight.plannedDates.endDate': DATE_TRANSLATOR,
       }),
   INSERTION_ORDERS: new SheetConfig(
       'Insertion Orders', DV360.InsertionOrders,
@@ -75,8 +76,8 @@ const SHEET_CONFIG = {
   LINE_ITEMS: new SheetConfig(
       'Line Items', DV360.LineItems,
       {advertiserId: 'C1', campaignId: 'C2', insertionOrderId: 'C3'}, 4, {
-        'flight.dateRange.startDate': SheetUtil.DATE_TRANSLATOR,
-        'flight.dateRange.endDate': SheetUtil.DATE_TRANSLATOR
+        'flight.dateRange.startDate': DATE_TRANSLATOR,
+        'flight.dateRange.endDate': DATE_TRANSLATOR,
       }),
   CREATIVES: new SheetConfig(
       'Creatives', DV360.Creatives, {advertiserId: 'C1', lineItemId: 'C3'}),
