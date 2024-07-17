@@ -350,7 +350,7 @@ class ApiUtil {
    */
   static buildApiUrl_(requestUri) {
     const apiEndpoint = 'https://displayvideo.googleapis.com';
-    const apiVersion = 'v1';
+    const apiVersion = 'v3';
 
     return `${apiEndpoint}/${apiVersion}/${requestUri}`;
   }
