@@ -74,6 +74,7 @@ class DV360Resource {
    * @return {!DV360Entity} fetched entity
    */
   get(parameters) {
+    delete parameters['fieldList_'];
     let output = null;
     ApiUtil.executeApiGetRequest(
         this.buildSingleEntityUri_(parameters), (result) => {
@@ -88,6 +89,7 @@ class DV360Resource {
    * @return {!DV360Entity} updated entity
    */
   update(entity) {
+    delete entity['fieldList_'];
     const original = this.get(entity);
     if (original.getPatchMask(entity) === '') {
       return original;
@@ -106,6 +108,7 @@ class DV360Resource {
    * @return {!DV360Entity} created object
    */
   create(entity) {
+    delete entity['fieldList_'];
     let output = null;
     const input = Object.assign({}, entity);
     delete input[this.primaryIdField_];
@@ -121,6 +124,7 @@ class DV360Resource {
    * @param {!DV360Entity} entity to delete
    */
   delete(entity) {
+    delete entity['fieldList_'];
     entity.entityStatus = 'ENTITY_STATUS_ARCHIVED';
     this.update(entity);
     ApiUtil.executeApiDeleteRequest(
